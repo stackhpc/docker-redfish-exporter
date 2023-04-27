@@ -1,18 +1,15 @@
 name: Create and publish a Docker image
 
 on:
-  push:
-    branches:
-      - 'master'
-    tags:
+  tags:
       - 'v*'
   pull_request:
     branches:
-      - 'master'
+      - 'main'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: stackhpc/redfish-exporter
 
 jobs:
   build-and-push-image:
@@ -37,9 +34,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            # set latest tag for master branch
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'master') }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
