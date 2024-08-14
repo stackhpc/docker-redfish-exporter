@@ -1,10 +1,25 @@
-FROM golang:alpine as builder
-RUN apk add --no-cache git
-RUN git clone https://github.com/jovial/redfish_exporter /build && cd /build && git checkout 59d1061fb0370cf72e1f813dfcc425f139be49d7
-WORKDIR /build
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
-FROM scratch
-COPY --from=builder /build/main /app/
-WORKDIR /app
-CMD ["./main"]
+FROM golang:rc-bullseye AS builder
 
+LABEL maintainer="Jennings Liu <jenningsloy318@gmail.com>"
+
+ARG ARCH=amd64
+
+ENV GOROOT /usr/local/go
+ENV GOPATH /go
+ENV PATH "$GOROOT/bin:$GOPATH/bin:$PATH"
+ENV GO_VERSION 1.15.2
+ENV GO111MODULE=on 
+
+
+# Build dependencies
+RUN mkdir -p /go/src/github.com/ && \
+    git clone -b stackhpc https://github.com/stackhpc/redfish_exporter /go/src/github.com/stackhpc/redfish_exporter && \
+    cd /go/src/github.com/stackhpc/redfish_exporter && \
+    make build
+
+FROM golang:rc-bullseye
+
+COPY --from=builder /go/src/github.com/stackhpc/redfish_exporter/build/redfish_exporter /usr/local/bin/redfish_exporter
+RUN mkdir /etc/prometheus
+COPY --from=builder /go/src/github.com/stackhpc/redfish_exporter/config.yml.example /etc/prometheus/redfish_exporter.yml
+CMD ["/usr/local/bin/redfish_exporter","--config.file","/etc/prometheus/redfish_exporter.yml"]
