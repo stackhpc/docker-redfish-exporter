@@ -1,4 +1,4 @@
-FROM golang:rc-bullseye AS builder
+FROM golang:1.24.2 AS builder
 
 LABEL maintainer="Jennings Liu <jenningsloy318@gmail.com>"
 
@@ -13,11 +13,11 @@ ENV GO111MODULE=on
 
 # Build dependencies
 RUN mkdir -p /go/src/github.com/ && \
-    git clone -b stackhpc https://github.com/stackhpc/redfish_exporter /go/src/github.com/stackhpc/redfish_exporter && \
+    git clone -b bugfix/storage-volume https://github.com/stackhpc/redfish_exporter /go/src/github.com/stackhpc/redfish_exporter && \
     cd /go/src/github.com/stackhpc/redfish_exporter && \
     make build
 
-FROM golang:rc-bullseye
+FROM golang:1.24.2
 
 COPY --from=builder /go/src/github.com/stackhpc/redfish_exporter/build/redfish_exporter /usr/local/bin/redfish_exporter
 RUN mkdir /etc/prometheus
