@@ -1,23 +1,17 @@
-FROM golang:rc-bullseye AS builder
+FROM golang:1.21 AS builder
 
 LABEL maintainer="Jennings Liu <jenningsloy318@gmail.com>"
 
 ARG ARCH=amd64
 
-ENV GOROOT /usr/local/go
-ENV GOPATH /go
-ENV PATH "$GOROOT/bin:$GOPATH/bin:$PATH"
-ENV GO_VERSION 1.15.2
-ENV GO111MODULE=on 
-
-
-# Build dependencies
+# Build binary
 RUN mkdir -p /go/src/github.com/ && \
-    git clone -b stackhpc https://github.com/stackhpc/redfish_exporter /go/src/github.com/stackhpc/redfish_exporter && \
+    git clone https://github.com/stackhpc/redfish_exporter /go/src/github.com/stackhpc/redfish_exporter && \
     cd /go/src/github.com/stackhpc/redfish_exporter && \
+    git checkout d963088baa0fd477878d7263d15f8507624c3172 && \
     make build
 
-FROM golang:rc-bullseye
+FROM golang:1.21
 
 COPY --from=builder /go/src/github.com/stackhpc/redfish_exporter/build/redfish_exporter /usr/local/bin/redfish_exporter
 RUN mkdir /etc/prometheus
