@@ -8,7 +8,7 @@ ARG ARCH=amd64
 RUN mkdir -p /go/src/github.com/ && \
     git clone https://github.com/stackhpc/redfish_exporter /go/src/github.com/stackhpc/redfish_exporter && \
     cd /go/src/github.com/stackhpc/redfish_exporter && \
-    git checkout 8a6aca3b3e4bc60ee3b8165f158c5448cba46138 && \
+    git checkout cff8b9d75e55ecb262240c80f00e2a8e807bbcdb && \
     make build
 
 FROM golang:1.21
